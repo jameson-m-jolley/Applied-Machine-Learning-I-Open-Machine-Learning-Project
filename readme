@@ -1,0 +1,12 @@
+we can get data from a pipeline 
+this pipeline is the data_pipe_extract_features.py
+
+and example of the useing this is 
+cat AI_text/meta1.txt | python3 data_pipe_extract_features.py -AI -schema -pipe > data.csv
+
+this will pipe the data into a csv 
+the -schema will print the schema for the csv so if you would like to append to this we can do this
+
+cat <AI_text_file_name.txt>| python3 data_pipe_extract_features.py -AI -pipe >> data.csv
+or
+cat <human_text_file_name.txt>| python3 data_pipe_extract_features.py -human -pipe >> data.csv

@@ -8,6 +8,8 @@ class args_obj:
     def __init__(self):
         self.txt = ""
         self.print_schema = False
+        self.from_pipe = False
+        self.label = None
         pass
 
 def parse_args(args):
@@ -20,6 +22,12 @@ def parse_args(args):
             index += 1
         elif args[index] == "-schema":
             ret.print_schema = True;
+        elif args[index] == "-pipe":
+            ret.from_pipe = True
+        elif args[index] == "-human":
+            ret.label = 'human'
+        elif args[index] == "-AI":
+            ret.label = "AI"
         else:
             print("useage -")
             print("py [options]")
@@ -69,6 +77,9 @@ def word_counts(raw_text):
 def vocab_size(raw_text):
     return len(word_counts(raw_text))
 
+def vocab_density(raw_text):
+    return (len(word_counts(raw_text))/word_count(raw_text))
+
 def hapax_ratio(raw_text):
     counts = word_counts(raw_text)
     sum_of_u_char = 0
@@ -106,6 +117,9 @@ def word_len_var(raw_txt):
 
 def emoji_count(raw_txt):
     return len(regex.findall(r'\p{Extended_Pictographic}', raw_txt))
+
+def ext_pictographic_density(raw_txt):
+    return emoji_count(raw_txt)/word_count(raw_txt)
 
 # We join the words with a pipe | (the OR operator)
 # and wrap them in \b (word boundaries)
@@ -157,20 +171,25 @@ def prc_punctuation(regex):
 def main():
     args_ob = parse_args(sys.argv)
     if args_ob.print_schema:
-        print("sent_len_avg,sent_len_var,word_count,vocab_size,hapax_ratio,word_len_avg,word_len_var,abbr_count,emoji_count,typo_count,stopword_count,ttr_score,pct_period,pct_question,pct_exclaim,pct_comma,pct_other_punc")
-    
-    with open(args_ob.txt, 'r',encoding='utf-8') as file:
-        NLtext = file.read()
+        schema = "sent_len_avg,sent_len_var,word_count,vocab_density,hapax_ratio,ttr_score,word_len_avg,word_len_var,ext_pictographic_density,stopword_count,punc_tilde,punc_backtick,punc_excl,punc_at,punc_hash,punc_dollar,punc_percent,punc_caret,punc_amp,punc_star,punc_lparen,punc_rparen,punc_under,punc_hyphen,punc_plus,punc_equal,punc_lbrace,punc_rbrace,punc_lbracket,punc_rbracket,punc_backslash,punc_pipe,punc_semi,punc_colon,punc_squote,punc_dquote,punc_comma,punc_langle,punc_period,punc_rangle,punc_slash,punc_question,label"
+        print(schema)
+    if args_ob.from_pipe:
+        NLtext = sys.stdin.read()
+    else:
+        with open(args_ob.txt, 'r',encoding='utf-8') as file:
+            NLtext = file.read()
 
-    
-    print(f'sent_len_avg {sent_len_avg(NLtext)}')
-    print(f'sent_len_var {sent_len_var(NLtext)}')
-    print(f'word_count {word_count(NLtext)}')
-    print(f'vocab_size {vocab_size(NLtext)}')
-    print(f'word_len_avg {word_len_avg(NLtext)}')
-    print(f'word_len_var {word_len_var(NLtext)}')
-    print(f'emoji_count {emoji_count(NLtext)}')
-    print(f'stopword_count {stopword_count(NLtext)}')
+        
+    _sent_len_avg = sent_len_avg(NLtext)
+    _sent_len_var = sent_len_var(NLtext)
+    _word_count = word_count(NLtext)
+    _vocab_density = vocab_density(NLtext)
+    _hapax_ratio = hapax_ratio(NLtext)
+    _ttr_score = ttr_score(NLtext)
+    _word_len_avg = word_len_avg(NLtext)
+    _word_len_var = word_len_var(NLtext)
+    _ext_pictographic_density = ext_pictographic_density(NLtext)
+    _stopword_count = stopword_count(NLtext)
 
     # Your existing list (I cleaned up the backslashes for the Python list format)
     special_chars = [
@@ -178,10 +197,14 @@ def main():
     '=', '{', '}', '[', ']', '\\', '|', ';', ':', "'", '"', ',', '<', '.', '>', 
     '/', '?'
     ]
+    res = {}
     for c in special_chars:
         # Use re.escape so that '*' becomes '\*' for the regex engine
         percentage = prc_punctuation(re.escape(c))(NLtext)
-        print(f'{c}% {percentage:.4f}')
+        res[c] = percentage
+
+    row =f"{_sent_len_avg},{_sent_len_var},{_word_count},{_vocab_density},{_hapax_ratio},{_ttr_score},{_word_len_avg},{_word_len_var},{_ext_pictographic_density},{_stopword_count},{res['~']},{res['`']},{res['!']},{res['@']},{res['#']},{res['$']},{res['%']},{res['^']},{res['&']},{res['*']},{res['(']},{res[')']},{res['_']},{res['-']},{res['+']},{res['=']},{res['{']},{res['}']},{res['[']},{res[']']},{res['\\']},{res['|']},{res[';']},{res[':']},{res["'"]},{res['"']},{res[',']},{res['<']},{res['.']},{res['>']},{res['/']},{res['?']},{args_ob.label}"
+    print(row)
 
 if __name__ =="__main__":
     main()
