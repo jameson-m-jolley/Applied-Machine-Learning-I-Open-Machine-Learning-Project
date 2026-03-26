@@ -1,8 +1,35 @@
 import sys
 import numpy as np
 import re
-
+import json
 import regex
+import math
+
+
+
+#maing the perplexity calculation for the input of the model
+
+#loading the bigram
+with open('bigram.json', 'r') as file:
+    # Parse the JSON data from the file into a Python dictionary
+    bigram = json.load(file)
+
+#this takes a sliding window of tokens and returns the probability of seeing that bigram
+#ex: ["cool","python"] -> number from (0,1)
+#print(bigram_estamation(["no","one"])) -> 0.06423982869379015
+def bigram_estamation(token_window):
+    return bigram[token_window[0]][token_window[1]]/bigram[token_window[0]]["\x00"] # "\x00" = n tokens after tokens[0]
+
+
+def Perplexity(raw_text):
+    split = clean_and_split_sent(raw_text)
+    s = list(map(lambda x:bigram_estamation([raw_text[x],raw_text[x+1]])),range(0,len(raw_text)-1))
+    product = math.prod(s)**len(bigram)
+
+
+
+
+
 
 class args_obj:
     def __init__(self):
@@ -190,6 +217,7 @@ def main():
     _word_len_var = word_len_var(NLtext)
     _ext_pictographic_density = ext_pictographic_density(NLtext)
     _stopword_count = stopword_count(NLtext)
+    _bigram_perplexity = Perplexity(NLtext)
 
     # Your existing list (I cleaned up the backslashes for the Python list format)
     special_chars = [

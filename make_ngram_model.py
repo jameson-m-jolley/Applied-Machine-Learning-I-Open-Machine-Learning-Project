@@ -13,7 +13,7 @@ def make_bigram_model(text):
 
         # 1. Initialize the word if it's the first time we see it
         if current_word not in bigram_model:
-            bigram_model[current_word] = {"total": 0}
+            bigram_model[current_word] = {"\x00": 0}
         
         # 2. Initialize the following word count if new
         if next_word not in bigram_model[current_word]:
@@ -21,7 +21,7 @@ def make_bigram_model(text):
             
         # 3. Increment both
         bigram_model[current_word][next_word] += 1
-        bigram_model[current_word]["total"] += 1
+        bigram_model[current_word]["\x00"] += 1 # this is to not use the name space of Total
    
 
 def main():
