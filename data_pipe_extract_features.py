@@ -18,13 +18,26 @@ with open('bigram.json', 'r') as file:
 #ex: ["cool","python"] -> number from (0,1)
 #print(bigram_estamation(["no","one"])) -> 0.06423982869379015
 def bigram_estamation(token_window):
-    return bigram[token_window[0]][token_window[1]]/bigram[token_window[0]]["\x00"] # "\x00" = n tokens after tokens[0]
+    try:
+        token_w =bigram[token_window[0]]
+        total_tokens_seen = bigram[token_window[0]]["\x00"]
+    except:
+        return 1 # ignores token
+    
+    try: 
+        count = token_w[token_window[1]]
+    except:
 
+        return 1/(total_tokens_seen+1) # this is just adjusting the model on the fly to account for the token that is not seen
+
+    return count/total_tokens_seen # "\x00" = n tokens after tokens[0]
+    
 
 def Perplexity(raw_text):
     split = clean_and_split_sent(raw_text)
-    s = list(map(lambda x:bigram_estamation([raw_text[x],raw_text[x+1]])),range(0,len(raw_text)-1))
-    product = math.prod(s)**len(bigram)
+    s = list(map(lambda x:bigram_estamation([raw_text[x],raw_text[x+1]]),range(0,len(raw_text)-1)))
+    print(s)
+    return math.prod(s)**(1/len(bigram))
 
 
 
@@ -37,6 +50,7 @@ class args_obj:
         self.print_schema = False
         self.from_pipe = False
         self.label = None
+        self.n_split = None
         pass
 
 def parse_args(args):
@@ -55,6 +69,9 @@ def parse_args(args):
             ret.label = 'human'
         elif args[index] == "-AI":
             ret.label = "AI"
+        elif args[index] == "-S":
+            ret.n_split = int(args[index+1])
+            index += 1
         else:
             print("useage -")
             print("py [options]")
@@ -198,41 +215,44 @@ def prc_punctuation(regex):
 def main():
     args_ob = parse_args(sys.argv)
     if args_ob.print_schema:
-        schema = "sent_len_avg,sent_len_var,word_count,vocab_density,hapax_ratio,ttr_score,word_len_avg,word_len_var,ext_pictographic_density,stopword_count,punc_tilde,punc_backtick,punc_excl,punc_at,punc_hash,punc_dollar,punc_percent,punc_caret,punc_amp,punc_star,punc_lparen,punc_rparen,punc_under,punc_hyphen,punc_plus,punc_equal,punc_lbrace,punc_rbrace,punc_lbracket,punc_rbracket,punc_backslash,punc_pipe,punc_semi,punc_colon,punc_squote,punc_dquote,punc_comma,punc_langle,punc_period,punc_rangle,punc_slash,punc_question,label"
+        schema = "sent_len_avg,sent_len_var,vocab_density,hapax_ratio,ttr_score,word_len_avg,word_len_var,ext_pictographic_density,stopword_count,punc_tilde,punc_backtick,punc_excl,punc_at,punc_hash,punc_dollar,punc_percent,punc_caret,punc_amp,punc_star,punc_lparen,punc_rparen,punc_under,punc_hyphen,punc_plus,punc_equal,punc_lbrace,punc_rbrace,punc_lbracket,punc_rbracket,punc_backslash,punc_pipe,punc_semi,punc_colon,punc_squote,punc_dquote,punc_comma,punc_langle,punc_period,punc_rangle,punc_slash,punc_question,label"
         print(schema)
     if args_ob.from_pipe:
-        NLtext = sys.stdin.read()
+        text = sys.stdin.read()
     else:
         with open(args_ob.txt, 'r',encoding='utf-8') as file:
-            NLtext = file.read()
+            text = file.read()
 
-        
-    _sent_len_avg = sent_len_avg(NLtext)
-    _sent_len_var = sent_len_var(NLtext)
-    _word_count = word_count(NLtext)
-    _vocab_density = vocab_density(NLtext)
-    _hapax_ratio = hapax_ratio(NLtext)
-    _ttr_score = ttr_score(NLtext)
-    _word_len_avg = word_len_avg(NLtext)
-    _word_len_var = word_len_var(NLtext)
-    _ext_pictographic_density = ext_pictographic_density(NLtext)
-    _stopword_count = stopword_count(NLtext)
-    _bigram_perplexity = Perplexity(NLtext)
+    chuck_size = len(text) // args_ob.n_split
+
+
+    for i in range(0 ,args_ob.n_split-1):
+        NLtext = text[chuck_size*i:chuck_size*(i+1)]
+        _sent_len_avg = sent_len_avg(NLtext)
+        _sent_len_var = sent_len_var(NLtext)
+        _vocab_density = vocab_density(NLtext)
+        _hapax_ratio = hapax_ratio(NLtext)
+        _ttr_score = ttr_score(NLtext)
+        _word_len_avg = word_len_avg(NLtext)
+        _word_len_var = word_len_var(NLtext)
+        _ext_pictographic_density = ext_pictographic_density(NLtext)
+        _stopword_count = stopword_count(NLtext)
+ 
 
     # Your existing list (I cleaned up the backslashes for the Python list format)
-    special_chars = [
+        special_chars = [
     '~', '`', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '-', '+', 
     '=', '{', '}', '[', ']', '\\', '|', ';', ':', "'", '"', ',', '<', '.', '>', 
     '/', '?'
     ]
-    res = {}
-    for c in special_chars:
+        res = {}
+        for c in special_chars:
         # Use re.escape so that '*' becomes '\*' for the regex engine
-        percentage = prc_punctuation(re.escape(c))(NLtext)
-        res[c] = percentage
+            percentage = prc_punctuation(re.escape(c))(NLtext)
+            res[c] = percentage
 
-    row =f"{_sent_len_avg},{_sent_len_var},{_word_count},{_vocab_density},{_hapax_ratio},{_ttr_score},{_word_len_avg},{_word_len_var},{_ext_pictographic_density},{_stopword_count},{res['~']},{res['`']},{res['!']},{res['@']},{res['#']},{res['$']},{res['%']},{res['^']},{res['&']},{res['*']},{res['(']},{res[')']},{res['_']},{res['-']},{res['+']},{res['=']},{res['{']},{res['}']},{res['[']},{res[']']},{res['\\']},{res['|']},{res[';']},{res[':']},{res["'"]},{res['"']},{res[',']},{res['<']},{res['.']},{res['>']},{res['/']},{res['?']},{args_ob.label}"
-    print(row)
+        row =f"{_sent_len_avg},{_sent_len_var},{_vocab_density},{_hapax_ratio},{_ttr_score},{_word_len_avg},{_word_len_var},{_ext_pictographic_density},{_stopword_count},{res['~']},{res['`']},{res['!']},{res['@']},{res['#']},{res['$']},{res['%']},{res['^']},{res['&']},{res['*']},{res['(']},{res[')']},{res['_']},{res['-']},{res['+']},{res['=']},{res['{']},{res['}']},{res['[']},{res[']']},{res['\\']},{res['|']},{res[';']},{res[':']},{res["'"]},{res['"']},{res[',']},{res['<']},{res['.']},{res['>']},{res['/']},{res['?']},{args_ob.label}"
+        print(row)
 
 if __name__ =="__main__":
     main()

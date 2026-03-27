@@ -12,11 +12,11 @@ or
 cat -s <human_text_file_name.txt>| python3 data_pipe_extract_features.py -human -pipe >> data.csv
 
 
-the construction of the bigram modle for the perplexity is the fallowing 
-cat -s human_text/* | python make_ngram_model.py > bygram.json
+we can now chuck the data 
+for example if we chunk the data into 500 peases we get 
 
-things to note the char \x00 is the total of chars that have ben seen after the token 
+cat  -s human_text/* | python3 data_pipe_extract_features.py -human -pipe -schema -S 500 > data.csv
 
-so ex: string: 'I have some good stuff I love stuff'
-the entry for I -> {"\x00":2 ,"have": 1, "stuff":1}
-this was done so that we have a fast probability lookup eg (token count/ val of "\x00")
+the -S is the size of the chunks---------------------------------------------------^
+
+i did cut the future of word count because i didn't want the model to think that the uniform number = human 

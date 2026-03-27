@@ -1,11 +1,21 @@
 import json
 import sys
-import nltk
+#import nltk
+#import regex
+import re
+
+
+def clean_and_split_sent(raw_txt):
+    regex = r'[.!?](?:\s+|$)|(?:\n\s*\n)'
+    sentences = re.split(regex, raw_txt)
+    split_sum = list(map(lambda x: sum(map(len,x.split())),sentences))
+    return split_sum
+
 
 bigram_model = {}
 
 def make_bigram_model(text):
-    tokens = text.lower().split()
+    tokens = clean_and_split_sent(text)
 
     for i in range(len(tokens) - 1):
         current_word = tokens[i]
