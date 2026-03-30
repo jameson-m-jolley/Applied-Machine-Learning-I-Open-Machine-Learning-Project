@@ -20,3 +20,24 @@ cat  -s human_text/* | python3 data_pipe_extract_features.py -human -pipe -schem
 the -S is the size of the chunks---------------------------------------------------^
 
 i did cut the future of word count because i didn't want the model to think that the uniform number = human 
+
+-------
+
+so we added a bunch of stuff
+
+extract_and_append_ai_data.py - takes AI data from batch CSVs and pipes through the feature extraction 
+process_hf_dataset.py - downloads the huggingface dataset and pipes each row through the pipeline
+download_hf_dataset.py - just downloads and shows you the dataset from huggingface
+
+the data.csv now has 1996 samples (998 human texts, 998 AI texts from 6 different models - gemma, mistral, qwen, llama, yi, gpt4o)
+
+we extract 41 features from each text:
+- sentence length stuff (avg and variance)
+- vocab metrics (density, hapax ratio, type token ratio)
+- word length analysis 
+- punctuation counts for like 32 different punctuation marks
+- stopword count
+
+if you want to run the huggingface script again just know it appends to data.csv so you'll get duplicates if you run it twice
+we already have all the data loaded so don't run it again unless you want more
+
