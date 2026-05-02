@@ -41,21 +41,31 @@ def process_text_via_pipe(text, label):
     """Pipe text through feature extraction using shell command."""
     try:
         # Use command from readme: cat <file> | python3 data_pipe_extract_features.py -AI -pipe >> data.csv
-        cmd = f"echo '{text.replace(chr(39), chr(92) + chr(39))}' | python3 data_pipe_extract_features.py -{label} -pipe"
+        cmd = ["python3", "data_pipe_extract_features.py", f"-{label}", "-pipe"]
         
-        result = subprocess.run(
+   
+        process = subprocess.Popen(
             cmd,
-            shell=True,
-            capture_output=True,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             text=True,
             cwd=PROJECT_DIR,
-            timeout=10
-        )
-        
-        if result.returncode != 0:
+            )
+
+        # 2. Talk to the process (TIMEOUT goes here)
+        try:
+            stdout_data, stderr_data = process.communicate(input=text, timeout=200)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            # Clean up the pipes after killing
+            stdout_data, stderr_data = process.communicate()
+            print(f"  [!] Timeout reached for {label}")
             return None
-        
-        return result.stdout
+
+  
+        print(stdout_data)
+        return stdout_data
     except Exception as e:
         print(f"  Error processing text: {e}")
         return None

@@ -56,6 +56,7 @@ class args_obj:
 def parse_args(args):
     index = 1
     ret = args_obj()
+    ret.n_split = 2
     while(index < len(args)):
         if args[index] == "-txt":
             #the next vals is filepath to the txt
@@ -142,7 +143,7 @@ def hapax_ratio(raw_text):
 
 def word_len_avg(raw_txt):
     tokens = raw_txt.split()
-    length = len(tokens);
+    length = len(tokens)
     return sum(map(len,tokens))/length
 
 
@@ -211,6 +212,44 @@ def prc_punctuation(regex):
             return 0
         return len(re.findall(regex,raw_txt))/total
     return return_func
+
+
+
+def make_row(text , print_schema = False ,n_split = 2 ):
+    if print_schema:
+        schema = "sent_len_avg,sent_len_var,vocab_density,hapax_ratio,ttr_score,word_len_avg,word_len_var,ext_pictographic_density,stopword_count,punc_tilde,punc_backtick,punc_excl,punc_at,punc_hash,punc_dollar,punc_percent,punc_caret,punc_amp,punc_star,punc_lparen,punc_rparen,punc_under,punc_hyphen,punc_plus,punc_equal,punc_lbrace,punc_rbrace,punc_lbracket,punc_rbracket,punc_backslash,punc_pipe,punc_semi,punc_colon,punc_squote,punc_dquote,punc_comma,punc_langle,punc_period,punc_rangle,punc_slash,punc_question,label"
+        print(schema)
+    chuck_size = len(text) // args_ob.n_split
+    for i in range(0 ,n_split-1):
+        NLtext = text[chuck_size*i:chuck_size*(i+1)]
+        _sent_len_avg = sent_len_avg(NLtext)
+        _sent_len_var = sent_len_var(NLtext)
+        _vocab_density = vocab_density(NLtext)
+        _hapax_ratio = hapax_ratio(NLtext)
+        _ttr_score = ttr_score(NLtext)
+        _word_len_avg = word_len_avg(NLtext)
+        _word_len_var = word_len_var(NLtext)
+        _ext_pictographic_density = ext_pictographic_density(NLtext)
+        _stopword_count = stopword_count(NLtext)
+ 
+
+    # Your existing list (I cleaned up the backslashes for the Python list format)
+        special_chars = [
+    '~', '`', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '-', '+', 
+    '=', '{', '}', '[', ']', '\\', '|', ';', ':', "'", '"', ',', '<', '.', '>', 
+    '/', '?'
+    ]
+        res = {}
+        for c in special_chars:
+        # Use re.escape so that '*' becomes '\*' for the regex engine
+            percentage = prc_punctuation(re.escape(c))(NLtext)
+            res[c] = percentage
+
+        row =f"{_sent_len_avg},{_sent_len_var},{_vocab_density},{_hapax_ratio},{_ttr_score},{_word_len_avg},{_word_len_var},{_ext_pictographic_density},{_stopword_count},{res['~']},{res['`']},{res['!']},{res['@']},{res['#']},{res['$']},{res['%']},{res['^']},{res['&']},{res['*']},{res['(']},{res[')']},{res['_']},{res['-']},{res['+']},{res['=']},{res['{']},{res['}']},{res['[']},{res[']']},{res['\\']},{res['|']},{res[';']},{res[':']},{res["'"]},{res['"']},{res[',']},{res['<']},{res['.']},{res['>']},{res['/']},{res['?']},{args_ob.label}"
+        print(row)
+
+
+
 
 def main():
     args_ob = parse_args(sys.argv)

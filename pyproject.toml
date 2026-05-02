@@ -1,0 +1,13 @@
+[project]
+name = "applied-machine-learning-i-open-machine-learning-project"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "huggingface-hub>=1.13.0",
+    "matplotlib>=3.10.9",
+    "pandas>=3.0.2",
+    "regex>=2026.4.4",
+    "scikit-learn>=1.8.0",
+]
