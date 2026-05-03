@@ -75,3 +75,11 @@ plt.title('Random Forest - Top 15 Feature Importances')
 plt.tight_layout()
 plt.savefig('plots/random_forest_feature_importance.png', dpi=100, bbox_inches='tight')
 print("\nFeature importance plot saved to: plots/random_forest_feature_importance.png")
+
+
+def predict_test_fn(x):
+    rf.predict(x)
+    
+from timer import time_and_recordFN
+for i in range(20):
+    time_and_recordFN(predict_test_fn,"Random_Forest")

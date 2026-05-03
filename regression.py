@@ -56,3 +56,12 @@ print("\nResults:")
 print("\nAccuracy:", accuracy_score(y_test, y_pred))
 print("\nClassification Report:\n", classification_report(y_test, y_pred))
 print("\nConfusion Matrix:\n", confusion_matrix(y_test, y_pred))
+
+def predict_test_fn(x):
+    s = scaler.transform(x)
+    c = DR.transform(s)
+    y = clf.predict(c)
+
+from timer import time_and_recordFN
+for i in range(20):
+    time_and_recordFN(predict_test_fn,"Logistic_regression")

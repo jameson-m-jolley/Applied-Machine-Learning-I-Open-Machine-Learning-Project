@@ -4,6 +4,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from sklearn.preprocessing import LabelEncoder
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from timer import time_and_recordFN
 
 # Load data
 print("Loading data...")
@@ -30,19 +31,20 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42, stratify=y
 )
 
+# Convert to numpy right at the start
+X_train_np = X_train.values 
+X_test_np = X_test.values
 print("preforming lda")
 DR = LinearDiscriminantAnalysis()
 # IMPORTANT: use fit_transform() to get 2D features back
-X_train_lda = DR.fit_transform(X_train, y_train) 
-X_test_lda = DR.transform(X_test)
+X_train_lda = DR.fit_transform(X_train_np, y_train) 
+X_test_lda = DR.transform(X_test_np)
 
 # Model
 print("Initializing model...")
 clf = DecisionTreeClassifier(
     criterion="gini",      # or "entropy"
     max_depth=10,          # prevent overfitting
-    min_samples_split=10,
-    min_samples_leaf=5,
     random_state=42
 )
 
@@ -59,3 +61,12 @@ print("\nResults:")
 print("\nAccuracy:", accuracy_score(y_test, y_pred))
 print("\nClassification Report:\n", classification_report(y_test, y_pred))
 print("\nConfusion Matrix:\n", confusion_matrix(y_test, y_pred))
+
+
+def predict_test_fn(x):
+    c=DR.transform(x)
+    y = clf.predict(c)
+
+for i in range(20):
+    time_and_recordFN(predict_test_fn,"DT_LDA")
+

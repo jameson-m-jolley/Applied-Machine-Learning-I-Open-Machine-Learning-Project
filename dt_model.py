@@ -52,3 +52,8 @@ print("\nResults:")
 print("\nAccuracy:", accuracy_score(y_test, y_pred))
 print("\nClassification Report:\n", classification_report(y_test, y_pred))
 print("\nConfusion Matrix:\n", confusion_matrix(y_test, y_pred))
+
+from timer import time_and_recordFN
+for i in range(5):
+    time_and_recordFN(clf.predict,"DT")
+
