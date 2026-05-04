@@ -9,10 +9,7 @@ import math
 
 #maing the perplexity calculation for the input of the model
 
-#loading the bigram
-with open('bigram.json', 'r') as file:
-    # Parse the JSON data from the file into a Python dictionary
-    bigram = json.load(file)
+
 
 #this takes a sliding window of tokens and returns the probability of seeing that bigram
 #ex: ["cool","python"] -> number from (0,1)
@@ -215,11 +212,11 @@ def prc_punctuation(regex):
 
 
 
-def make_row(text , print_schema = False ,n_split = 2 ):
+def make_rows(text , print_schema = False ,n_split = 2 ):
     if print_schema:
         schema = "sent_len_avg,sent_len_var,vocab_density,hapax_ratio,ttr_score,word_len_avg,word_len_var,ext_pictographic_density,stopword_count,punc_tilde,punc_backtick,punc_excl,punc_at,punc_hash,punc_dollar,punc_percent,punc_caret,punc_amp,punc_star,punc_lparen,punc_rparen,punc_under,punc_hyphen,punc_plus,punc_equal,punc_lbrace,punc_rbrace,punc_lbracket,punc_rbracket,punc_backslash,punc_pipe,punc_semi,punc_colon,punc_squote,punc_dquote,punc_comma,punc_langle,punc_period,punc_rangle,punc_slash,punc_question,label"
         print(schema)
-    chuck_size = len(text) // args_ob.n_split
+    chuck_size = len(text) // n_split
     for i in range(0 ,n_split-1):
         NLtext = text[chuck_size*i:chuck_size*(i+1)]
         _sent_len_avg = sent_len_avg(NLtext)
@@ -245,8 +242,8 @@ def make_row(text , print_schema = False ,n_split = 2 ):
             percentage = prc_punctuation(re.escape(c))(NLtext)
             res[c] = percentage
 
-        row =f"{_sent_len_avg},{_sent_len_var},{_vocab_density},{_hapax_ratio},{_ttr_score},{_word_len_avg},{_word_len_var},{_ext_pictographic_density},{_stopword_count},{res['~']},{res['`']},{res['!']},{res['@']},{res['#']},{res['$']},{res['%']},{res['^']},{res['&']},{res['*']},{res['(']},{res[')']},{res['_']},{res['-']},{res['+']},{res['=']},{res['{']},{res['}']},{res['[']},{res[']']},{res['\\']},{res['|']},{res[';']},{res[':']},{res["'"]},{res['"']},{res[',']},{res['<']},{res['.']},{res['>']},{res['/']},{res['?']},{args_ob.label}"
-        print(row)
+        #row =f"{_sent_len_avg},{_sent_len_var},{_vocab_density},{_hapax_ratio},{_ttr_score},{_word_len_avg},{_word_len_var},{_ext_pictographic_density},{_stopword_count},{res['~']},{res['`']},{res['!']},{res['@']},{res['#']},{res['$']},{res['%']},{res['^']},{res['&']},{res['*']},{res['(']},{res[')']},{res['_']},{res['-']},{res['+']},{res['=']},{res['{']},{res['}']},{res['[']},{res[']']},{res['\\']},{res['|']},{res[';']},{res[':']},{res["'"]},{res['"']},{res[',']},{res['<']},{res['.']},{res['>']},{res['/']},{res['?']},{args_ob.label}"
+        return np.array([_sent_len_avg,_sent_len_var,_vocab_density,_hapax_ratio,_ttr_score,_word_len_avg,_word_len_var,_ext_pictographic_density,_stopword_count,res['~'],res['`'],res['!'],res['@'],res['#'],res['$'],res['%'],res['^'],res['&'],res['*'],res['('],res[')'],res['_'],res['-'],res['+'],res['='],res['{'],res['}'],res['['],res[']'],res['\\'],res['|'],res[';'],res[':'],res["'"],res['"'],res[','],res['<'],res['.'],res['>'],res['/'],res['?']])
 
 
 
